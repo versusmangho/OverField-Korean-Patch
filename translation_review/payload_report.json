@@ -1,0 +1,14 @@
+{
+  "changed_text_fields": 3413,
+  "applied_once": 3413,
+  "bundle_size": 10292378,
+  "crc32": "83543408",
+  "base_payload": "patch_payload.before-review.dat",
+  "modified_asset": "String_Korea",
+  "all_other_assets": "preserved",
+  "missing_japanese_verified_by_exact_korean": [
+    "46_1289937896_3"
+  ],
+  "game_executed": false,
+  "installed_game_files_written": false
+}

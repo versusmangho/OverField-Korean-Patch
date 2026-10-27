@@ -1,0 +1,3 @@
+PyQt6==6.11.0
+UnityPy==1.25.0
+requests==2.34.2

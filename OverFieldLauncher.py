@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-오버필드 (OverField) 공식 한국어 런처 & 자동 패처 (경량 다운로더 버전)
-- 번역 바이너리를 내장하지 않고 GitHub Releases에서 항상 최신 패치를 받아옴
+오버필드 (OverField) 비공식 한국어 런처 & 자동 패처
+- 내장/로컬 패치 지원 및 선택적 GitHub 업데이트
 - 게임사 핫픽스 감지 시 자동으로 번역 재주입 및 YooAsset CRC32 통과
 - 다운로드 진행도 실시간 표시 및 원클릭 게임 실행
 """
@@ -16,6 +16,7 @@ import binascii
 import urllib.request
 import subprocess
 import winreg
+import tempfile
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
     QLabel, QPushButton, QLineEdit, QFileDialog, QTextEdit,
@@ -35,6 +36,27 @@ def get_base_dir():
         return os.path.dirname(sys.executable)
     return os.path.dirname(os.path.abspath(__file__))
 
+def atomic_write(path, data):
+    directory = os.path.dirname(os.path.abspath(path))
+    os.makedirs(directory, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(prefix=".overfield-", dir=directory)
+    try:
+        with os.fdopen(fd, "wb") as stream:
+            stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
+def validate_bundle(data):
+    if not data.startswith(b"UnityFS\x00"):
+        raise ValueError("유효한 UnityFS 패치 번들이 아닙니다.")
+    return data
+
+
 def load_config():
     default_config = {
         "game_path": "",
@@ -49,24 +71,22 @@ def load_config():
         try:
             with open(config_path, "r", encoding="utf-8") as f:
                 saved = json.load(f)
-                default_config.update(saved)
+                if isinstance(saved, dict):
+                    default_config.update(saved)
         except Exception:
             pass
     return default_config
 
 def save_config(config):
     config_path = os.path.join(get_base_dir(), CONFIG_FILE)
-    try:
-        with open(config_path, "w", encoding="utf-8") as f:
-            json.dump(config, f, indent=4, ensure_ascii=False)
-    except Exception:
-        pass
+    atomic_write(config_path, json.dumps(config, indent=4, ensure_ascii=False).encode("utf-8"))
+
 
 def find_steam_game_path():
     exe_dir = get_base_dir()
     if os.path.exists(os.path.join(exe_dir, "launcher.exe")):
         return exe_dir
-    
+
     cwd = os.getcwd()
     if os.path.exists(os.path.join(cwd, "launcher.exe")):
         return cwd
@@ -79,11 +99,11 @@ def find_steam_game_path():
         hkey = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Valve\Steam")
         steam_path, _ = winreg.QueryValueEx(hkey, "SteamPath")
         winreg.CloseKey(hkey)
-        
+
         cand = os.path.join(steam_path, "steamapps", "common", "OverField")
         if os.path.exists(os.path.join(cand, "launcher.exe")):
             return cand
-            
+
         vdf_path = os.path.join(steam_path, "steamapps", "libraryfolders.vdf")
         if os.path.exists(vdf_path):
             with open(vdf_path, "r", encoding="utf-8", errors="ignore") as f:
@@ -102,9 +122,9 @@ def find_steam_game_path():
 def detect_yooasset_cache(game_dir):
     manifest_dir = os.path.join(game_dir, "launcher_Data", "yoo", "DefaultPackage", "ManifestFiles")
     cache_base = os.path.join(game_dir, "launcher_Data", "yoo", "DefaultPackage", "CacheFiles")
-    
+
     cache_hash = "68a9e72732e99edf100d6e4a6f692583"
-    
+
     if os.path.exists(manifest_dir):
         manifests = glob.glob(os.path.join(manifest_dir, "PackageManifest_*.bytes"))
         if manifests:
@@ -125,7 +145,7 @@ def detect_yooasset_cache(game_dir):
     data_file = os.path.join(target_cache_dir, "__data")
     info_file = os.path.join(target_cache_dir, "__info")
     streaming_bundle = os.path.join(game_dir, "launcher_Data", "StreamingAssets", "yoo", "DefaultPackage", "d36af905d36461838e80ed5db5090c65.bundle")
-    
+
     return {
         "cache_hash": cache_hash,
         "cache_dir": target_cache_dir,
@@ -135,6 +155,7 @@ def detect_yooasset_cache(game_dir):
     }
 
 def apply_bundle_to_game(game_dir, bundle_bytes):
+    validate_bundle(bundle_bytes)
     info = detect_yooasset_cache(game_dir)
     data_path = info["data_file"]
     info_path = info["info_file"]
@@ -151,18 +172,18 @@ def apply_bundle_to_game(game_dir, bundle_bytes):
         open(streaming_path + ".bak", "wb").write(open(streaming_path, "rb").read())
 
     # 캐시 번들 작성
-    open(data_path, "wb").write(bundle_bytes)
+    atomic_write(data_path, bundle_bytes)
 
     # YooAsset 검증 통과용 CRC32 + 파일크기 info 작성 (18 bytes)
     crc = binascii.crc32(bundle_bytes) & 0xFFFFFFFF
     crc_hex = f"{crc:08x}"
     file_size = len(bundle_bytes)
     info_bytes = struct.pack('<H', 8) + crc_hex.encode('ascii') + struct.pack('<q', file_size)
-    open(info_path, "wb").write(info_bytes)
+    atomic_write(info_path, info_bytes)
 
     # StreamingAssets 업데이트
     if os.path.exists(os.path.dirname(streaming_path)):
-        open(streaming_path, "wb").write(bundle_bytes)
+        atomic_write(streaming_path, bundle_bytes)
 
     # steam_appid.txt 보장
     appid_path = os.path.join(game_dir, "steam_appid.txt")
@@ -208,12 +229,12 @@ class LauncherWorker(QThread):
 
         repo = self.config.get("github_repo", DEFAULT_GITHUB_REPO).strip()
         local_payload_file = os.path.join(get_base_dir(), PAYLOAD_FILENAME)
-        
+
         bundle_bytes = None
         new_version_downloaded = False
 
         # 1. GitHub에서 최신 릴리즈 확인 및 다운로드
-        if repo and "/" in repo:
+        if self.config.get("auto_update", True) and repo and "/" in repo:
             self.log_signal.emit(f"🌐 GitHub에서 최신 번역 데이터 확인 중... ({repo})")
             remote_data, remote_tag = self.fetch_github_patch(repo)
             if remote_data:
@@ -222,24 +243,31 @@ class LauncherWorker(QThread):
                 self.log_signal.emit(f"✨ GitHub에서 최신 패치(v{remote_tag}) 다운로드 완료!")
                 # 로컬에 캐싱 보관
                 try:
-                    open(local_payload_file, "wb").write(zlib.compress(bundle_bytes, 9))
+                    atomic_write(local_payload_file, zlib.compress(bundle_bytes, 9))
                 except Exception:
                     pass
-                self.config["current_patch_version"] = remote_tag
-                save_config(self.config)
 
         self.progress_signal.emit(50)
+
+        if bundle_bytes is None and not os.path.exists(local_payload_file):
+            bundled = os.path.join(getattr(sys, "_MEIPASS", get_base_dir()), PAYLOAD_FILENAME)
+            if os.path.exists(bundled):
+                bundle_bytes = validate_bundle(zlib.decompress(open(bundled, "rb").read()))
 
         # 2. GitHub 연결 실패 시 로컬 캐시된 패치 페이로드 확인
         if bundle_bytes is None:
             if os.path.exists(local_payload_file):
                 self.log_signal.emit("📦 로컬에 저장된 번역 패치 데이터를 로드합니다.")
-                bundle_bytes = zlib.decompress(open(local_payload_file, "rb").read())
+                bundle_bytes = validate_bundle(zlib.decompress(open(local_payload_file, "rb").read()))
             else:
                 fallback = os.path.join(game_dir, "OverField_Korean_Patch", "launcher_Data", "StreamingAssets", "yoo", "DefaultPackage", "d36af905d36461838e80ed5db5090c65.bundle")
                 if os.path.exists(fallback):
                     self.log_signal.emit("📦 기본 디렉토리의 패치 번들을 로드합니다.")
                     bundle_bytes = open(fallback, "rb").read()
+
+        if bundle_bytes is None:
+            raise FileNotFoundError("사용 가능한 패치 데이터가 없습니다. 패치 파일 또는 GitHub 설정을 확인해주세요.")
+        validate_bundle(bundle_bytes)
 
         # 3. 게임 YooAsset 캐시 점검 및 패치 적용
         cache_info = detect_yooasset_cache(game_dir)
@@ -262,9 +290,14 @@ class LauncherWorker(QThread):
             else:
                 # CRC 일치 확인
                 expected_crc = f"{binascii.crc32(bundle_bytes) & 0xFFFFFFFF:08x}"
-                if expected_crc.encode('ascii') not in open(info_file, 'rb').read():
+                if (expected_crc.encode('ascii') not in open(info_file, 'rb').read()
+                        or binascii.crc32(open(data_file, 'rb').read()) & 0xFFFFFFFF != binascii.crc32(bundle_bytes) & 0xFFFFFFFF):
                     self.log_signal.emit("⚠️ YooAsset __info 메타데이터 불일치 감지. 자동 재동기화 진행.")
                     need_apply = True
+
+        streaming_file = cache_info["streaming_bundle"]
+        if not os.path.exists(streaming_file) or open(streaming_file, "rb").read() != bundle_bytes:
+            need_apply = True
 
         self.progress_signal.emit(75)
 
@@ -278,22 +311,25 @@ class LauncherWorker(QThread):
             crc_hex, fsize = apply_bundle_to_game(game_dir, bundle_bytes)
             self.log_signal.emit(f"✅ 한글 패치 주입 및 YooAsset CRC32({crc_hex.upper()}) 동기화 성공!")
 
+        if new_version_downloaded:
+            self.config["current_patch_version"] = remote_tag
+            save_config(self.config)
         self.progress_signal.emit(100)
-        self.status_signal.emit(f"● 최신 한글 패치 완료 (v{self.config.get('current_patch_version', '1.0')})", "#43b581")
+        self.status_signal.emit(f"● 한글 패치 적용 확인 (v{self.config.get('current_patch_version', '1.0')})", "#43b581")
         self.log_signal.emit("🟢 모든 점검 완료! [게임 시작] 버튼을 누르시면 오버필드가 실행됩니다.")
         self.finished_signal.emit(True, "READY")
 
     def do_force_patch(self, game_dir):
         self.log_signal.emit("🚀 최신 한글 패치 강제 다운로드 및 재적용 시작...")
         self.progress_signal.emit(20)
-        
+
         repo = self.config.get("github_repo", DEFAULT_GITHUB_REPO).strip()
-        bundle_bytes, remote_tag = self.fetch_github_patch(repo)
+        bundle_bytes, remote_tag = self.fetch_github_patch(repo, force=True)
 
         if bundle_bytes is None:
             local_payload_file = os.path.join(get_base_dir(), PAYLOAD_FILENAME)
             if os.path.exists(local_payload_file):
-                bundle_bytes = zlib.decompress(open(local_payload_file, "rb").read())
+                bundle_bytes = validate_bundle(zlib.decompress(open(local_payload_file, "rb").read()))
             else:
                 self.log_signal.emit("❌ 패치 데이터를 가져올 수 없습니다.")
                 self.finished_signal.emit(False, "FAIL")
@@ -301,40 +337,35 @@ class LauncherWorker(QThread):
 
         self.progress_signal.emit(70)
         crc_hex, fsize = apply_bundle_to_game(game_dir, bundle_bytes)
+        atomic_write(os.path.join(get_base_dir(), PAYLOAD_FILENAME), zlib.compress(bundle_bytes, 9))
+        if remote_tag:
+            self.config["current_patch_version"] = remote_tag
+            save_config(self.config)
         self.progress_signal.emit(100)
         self.log_signal.emit(f"✅ 패치 재적용 및 CRC32 동기화 완료! (CRC={crc_hex.upper()})")
         self.status_signal.emit("● 한글 패치 완료 (실행 준비됨)", "#43b581")
         self.finished_signal.emit(True, "MANUAL_DONE")
 
     def do_restore(self, game_dir):
-        self.log_signal.emit("🔄 순정 원본 복구 시작...")
+        self.log_signal.emit("🔄 적용 전 백업 복구 시작...")
         self.progress_signal.emit(30)
         cache_info = detect_yooasset_cache(game_dir)
         data_path = cache_info["data_file"]
         info_path = cache_info["info_file"]
         streaming_path = cache_info["streaming_bundle"]
 
-        restored = False
-        if os.path.exists(data_path + ".clean_orig"):
-            open(data_path, "wb").write(open(data_path + ".clean_orig", "rb").read())
-            restored = True
-        if os.path.exists(info_path + ".clean_orig"):
-            open(info_path, "wb").write(open(info_path + ".clean_orig", "rb").read())
-            restored = True
-        if os.path.exists(streaming_path + ".bak"):
-            open(streaming_path, "wb").write(open(streaming_path + ".bak", "rb").read())
-            restored = True
-
+        paths = [data_path, info_path, streaming_path]
+        backups = [data_path + ".clean_orig", info_path + ".clean_orig", streaming_path + ".bak"]
+        if not all(os.path.isfile(path) for path in backups):
+            raise FileNotFoundError("완전한 원본 백업이 없습니다. Steam 파일 무결성 검사로 복구해주세요.")
+        for target, backup in zip(paths, backups):
+            atomic_write(target, open(backup, "rb").read())
         self.progress_signal.emit(100)
-        if restored:
-            self.log_signal.emit("✨ 순정 원본으로 복구되었습니다.")
-            self.status_signal.emit("● 순정 원본 상태 (미패치)", "#f0b232")
-            self.finished_signal.emit(True, "RESTORE_DONE")
-        else:
-            self.log_signal.emit("⚠️ 순정 원본 백업 파일(.clean_orig)을 찾을 수 없습니다.")
-            self.finished_signal.emit(False, "NO_BACKUP")
+        self.log_signal.emit("백업 파일 복구 완료. 백업이 순정인지 여부는 Steam 무결성 검사로 확인할 수 있습니다.")
+        self.status_signal.emit("● 패치 적용 전 백업으로 복구됨", "#f0b232")
+        self.finished_signal.emit(True, "RESTORE_DONE")
 
-    def fetch_github_patch(self, repo):
+    def fetch_github_patch(self, repo, force=False):
         try:
             url = f"https://api.github.com/repos/{repo}/releases/latest"
             req = urllib.request.Request(url, headers={"User-Agent": "OverFieldLauncher"})
@@ -342,10 +373,10 @@ class LauncherWorker(QThread):
                 rel = json.loads(resp.read().decode())
                 tag = rel.get("tag_name", "").lstrip("v")
                 current = self.config.get("current_patch_version", "0.0.0").lstrip("v")
-                
+
                 # 로컬에 패치 파일이 없거나 새 버전이 올라온 경우
                 local_payload = os.path.join(get_base_dir(), PAYLOAD_FILENAME)
-                need_download = (tag != current) or (not os.path.exists(local_payload))
+                need_download = force or (tag != current) or (not os.path.exists(local_payload))
 
                 if need_download:
                     for asset in rel.get("assets", []):
@@ -353,7 +384,7 @@ class LauncherWorker(QThread):
                             download_url = asset.get("browser_download_url")
                             size = asset.get("size", 0)
                             self.log_signal.emit(f"⬇️ GitHub에서 새 번역 패치(v{tag}) 다운로드 시작 ({size:,} bytes)...")
-                            
+
                             # 다운로드 진행도 처리
                             with urllib.request.urlopen(download_url, timeout=30) as d_resp:
                                 total_size = int(d_resp.headers.get('Content-Length', size))
@@ -366,12 +397,12 @@ class LauncherWorker(QThread):
                                         break
                                     chunks.append(chunk)
                                     downloaded += len(chunk)
-                                    pct = min(100, int(downloaded / total_size * 50) + 20)
+                                    pct = min(100, int(downloaded / max(total_size, 1) * 50) + 20)
                                     self.progress_signal.emit(pct)
 
                                 comp_data = b"".join(chunks)
                                 decomp = zlib.decompress(comp_data)
-                                return decomp, tag
+                                return validate_bundle(decomp), tag
                 else:
                     self.log_signal.emit(f"ℹ️ 현재 버전(v{current})이 GitHub 최신 버전과 일치합니다.")
                     return None, tag
@@ -457,7 +488,7 @@ class OverFieldLauncherApp(QMainWindow):
         self.run_startup_sequence()
 
     def init_ui(self):
-        self.setWindowTitle("오버필드 (OverField) 공식 한국어 런처")
+        self.setWindowTitle("오버필드 (OverField) 비공식 한국어 런처")
         self.setFixedSize(720, 560)
         self.setStyleSheet("""
             QMainWindow { background-color: #14151c; }
@@ -543,7 +574,7 @@ class OverFieldLauncherApp(QMainWindow):
         title_label = QLabel("OVERFIELD LAUNCHER")
         title_label.setFont(QFont("Malgun Gothic", 17, QFont.Weight.Bold))
         title_label.setStyleSheet("color: #ffffff; letter-spacing: 1px;")
-        
+
         ver_text = f"저장소: {self.config.get('github_repo', DEFAULT_GITHUB_REPO)} | 핫픽스 자동 대응 & CRC 바이패스"
         sub_label = QLabel(ver_text)
         sub_label.setStyleSheet("color: #7d8299; font-size: 11px;")
@@ -576,7 +607,7 @@ class OverFieldLauncherApp(QMainWindow):
         path_label.setStyleSheet("font-weight: bold; color: #a0a4b8;")
         self.path_edit = QLineEdit(self.config.get("game_path", ""))
         self.path_edit.setPlaceholderText("OverField 게임 설치 폴더를 지정해주세요...")
-        
+
         browse_btn = QPushButton("찾아보기...")
         browse_btn.setProperty("class", "action_btn")
         browse_btn.clicked.connect(self.browse_path)
@@ -601,12 +632,12 @@ class OverFieldLauncherApp(QMainWindow):
         bottom_box = QHBoxLayout()
         bottom_box.setSpacing(12)
 
-        self.reapply_btn = QPushButton("🔄 최신 패치 재다운로드")
+        self.reapply_btn = QPushButton("🔄 패치 다운로드 / 재적용")
         self.reapply_btn.setProperty("class", "action_btn")
         self.reapply_btn.setFixedHeight(52)
         self.reapply_btn.clicked.connect(self.force_patch)
 
-        self.restore_btn = QPushButton("⏪ 순정 원본 복구")
+        self.restore_btn = QPushButton("⏪ 적용 전 백업 복구")
         self.restore_btn.setProperty("class", "action_btn")
         self.restore_btn.setFixedHeight(52)
         self.restore_btn.clicked.connect(self.restore_original)
@@ -631,6 +662,8 @@ class OverFieldLauncherApp(QMainWindow):
         self.status_badge.setStyleSheet(f"background-color: #1e202b; color: {color}; border: 1px solid {color}; padding: 6px 14px; border-radius: 14px;")
 
     def browse_path(self):
+        if getattr(self, "worker", None) is not None and self.worker.isRunning():
+            return
         folder = QFileDialog.getExistingDirectory(self, "OverField 설치 폴더 선택", self.path_edit.text() or "C:\\")
         if folder:
             self.path_edit.setText(folder)
@@ -639,11 +672,18 @@ class OverFieldLauncherApp(QMainWindow):
             self.run_startup_sequence()
 
     def open_settings(self):
+        if getattr(self, "worker", None) is not None and self.worker.isRunning():
+            return
         dlg = SettingsDialog(self.config, self)
         if dlg.exec():
             self.log("⚙️ 설정이 저장되었습니다.")
 
     def run_startup_sequence(self):
+        if getattr(self, "worker", None) is not None and self.worker.isRunning():
+            return
+        if self.is_game_running():
+            self.log("게임 실행 중에는 패치를 변경하지 않습니다. 게임 종료 후 런처를 다시 열어주세요.")
+            return
         game_path = self.path_edit.text().strip()
         if not game_path or not os.path.exists(os.path.join(game_path, "launcher.exe")):
             detected = find_steam_game_path()
@@ -662,6 +702,7 @@ class OverFieldLauncherApp(QMainWindow):
         self.reapply_btn.setEnabled(False)
         self.restore_btn.setEnabled(False)
 
+        self.path_edit.setEnabled(False)
         self.worker = LauncherWorker(self.config, mode="startup")
         self.worker.log_signal.connect(self.log)
         self.worker.progress_signal.connect(self.progress_bar.setValue)
@@ -670,39 +711,59 @@ class OverFieldLauncherApp(QMainWindow):
         self.worker.start()
 
     def on_startup_finished(self, success, action):
+        self.path_edit.setEnabled(True)
         self.reapply_btn.setEnabled(True)
         self.restore_btn.setEnabled(True)
         if success:
             self.start_btn.setEnabled(True)
             if self.config.get("auto_launch"):
                 self.log("🚀 'Fast Boot' 옵션 활성화: 1.5초 후 오버필드를 자동 실행합니다...")
-                QTimer.singleShot(1500, self.launch_game)
+                QTimer.singleShot(1500, lambda: self.launch_game() if self.start_btn.isEnabled() else None)
         else:
             self.start_btn.setEnabled(False)
 
-    def force_patch(self):
-        self.start_btn.setEnabled(False)
-        self.worker = LauncherWorker(self.config, mode="force_patch")
+    def set_busy(self, busy):
+        self.start_btn.setEnabled(not busy)
+        self.reapply_btn.setEnabled(not busy)
+        self.restore_btn.setEnabled(not busy)
+        self.path_edit.setEnabled(not busy)
+
+    def start_operation(self, mode):
+        if getattr(self, "worker", None) is not None and self.worker.isRunning():
+            return
+        if self.is_game_running():
+            QMessageBox.warning(self, "게임 실행 중", "게임을 종료한 뒤 패치 또는 복구해주세요.")
+            return
+        self.config["game_path"] = self.path_edit.text().strip()
+        save_config(self.config)
+        self.set_busy(True)
+        self.worker = LauncherWorker(self.config, mode=mode)
         self.worker.log_signal.connect(self.log)
         self.worker.progress_signal.connect(self.progress_bar.setValue)
         self.worker.status_signal.connect(self.set_badge)
-        self.worker.finished_signal.connect(lambda s, a: self.start_btn.setEnabled(s))
+        self.worker.finished_signal.connect(self.on_operation_finished)
         self.worker.start()
+
+    def on_operation_finished(self, success, action):
+        self.set_busy(False)
+        self.start_btn.setEnabled(success)
+
+    def force_patch(self):
+        self.start_operation("force_patch")
 
     def restore_original(self):
         reply = QMessageBox.question(
-            self, "순정 복구 확인",
-            "한글 패치를 해제하고 게임을 순정 원본 상태로 복구하시겠습니까?",
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        )
+            self, "순정 복구 확인", "게임을 원본 백업으로 복구하시겠습니까?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         if reply == QMessageBox.StandardButton.Yes:
-            self.start_btn.setEnabled(False)
-            self.worker = LauncherWorker(self.config, mode="restore")
-            self.worker.log_signal.connect(self.log)
-            self.worker.progress_signal.connect(self.progress_bar.setValue)
-            self.worker.status_signal.connect(self.set_badge)
-            self.worker.finished_signal.connect(lambda s, a: self.start_btn.setEnabled(s))
-            self.worker.start()
+            self.start_operation("restore")
+
+    def closeEvent(self, event):
+        if getattr(self, "worker", None) is not None and self.worker.isRunning():
+            self.log("패치 작업이 끝난 뒤 런처를 종료해주세요.")
+            event.ignore()
+            return
+        super().closeEvent(event)
 
     def is_game_running(self):
         try:
@@ -735,8 +796,8 @@ class OverFieldLauncherApp(QMainWindow):
             open(appid_file, "w", encoding="ascii").write(f"{STEAM_APP_ID}\n")
 
         try:
-            os.startfile(f"steam://rungameid/{STEAM_APP_ID}")
-            self.log("🎮 스팀 프로토콜을 통해 오버필드가 실행되었습니다!")
+            subprocess.Popen([exe, *sys.argv[2:]] if len(sys.argv) > 1 and os.path.basename(sys.argv[1]).lower() == "launcher.exe" else [exe], cwd=game_dir)
+            self.log("🎮 오버필드 실행 요청을 전달했습니다!")
         except Exception as e:
             self.log(f"⚠️ 스팀 프로토콜 실패, 직접 실행: {str(e)}")
             try:

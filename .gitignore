@@ -1,6 +1,18 @@
-# Git ignore
 __pycache__/
-*.pyc
+*.py[cod]
 *.tmp
 *.log
+.venv/
+build/
+dist/
 .build/
+*.exe
+*.zip
+*.bundle
+patch_payload.dat
+settings.json
+_patch_archive/
+launcher_Data/
+translation_review/*.before-review.*
+translation_review/reviewed_payload.dat
+translation_review/reviewed__info

@@ -1,0 +1,5 @@
+*.py text eol=lf
+*.md text eol=lf
+*.spec text eol=lf
+*.bat text eol=crlf
+*.json -text whitespace=cr-at-eol

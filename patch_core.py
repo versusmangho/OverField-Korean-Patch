@@ -8,6 +8,7 @@ import json
 import struct
 import shutil
 import zipfile
+import zlib
 import UnityPy
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -42,12 +43,12 @@ def make_textasset_raw(name_str, script_bytes):
     name_bytes = name_str.encode('utf-8')
     name_len = len(name_bytes)
     name_pad = (4 - (name_len % 4)) % 4
-    
+
     script_len = len(script_bytes)
     data = bytearray()
     data += struct.pack('<i', name_len) + name_bytes + (b'\x00' * name_pad)
     data += struct.pack('<i', script_len) + script_bytes
-    
+
     end_pad = (4 - (len(data) % 4)) % 4
     data += b'\x00' * end_pad
     return bytes(data)
@@ -61,7 +62,7 @@ def parse_protobuf_tables(raw_bytes):
         l, offset = parse_varint(raw_bytes, offset)
         t_buf = raw_bytes[offset:offset+l]
         offset += l
-        
+
         entries = []
         sub_off = 0
         while sub_off < len(t_buf):
@@ -69,7 +70,7 @@ def parse_protobuf_tables(raw_bytes):
             el, sub_off = parse_varint(t_buf, sub_off)
             entry_buf = t_buf[sub_off:sub_off+el]
             sub_off += el
-            
+
             item_off = 0
             fields = []
             item_id = 0
@@ -117,7 +118,7 @@ def pack_translations_to_bundle(items, bundle_path=None):
     # 우선 캐시 번들 원본 로드
     cache_src = CACHE_DATA + ".bak" if os.path.exists(CACHE_DATA + ".bak") else CACHE_DATA
     target_bundle_file = cache_src if os.path.exists(cache_src) else STREAMING_BUNDLE
-    
+
     env = UnityPy.load(target_bundle_file)
     target_obj = None
     for obj in env.objects:
@@ -166,11 +167,21 @@ def pack_translations_to_bundle(items, bundle_path=None):
     target_obj.byte_size = len(new_raw)
 
     saved_bytes = env.file.save(packer="lz4")
+    for original in (CACHE_DATA, STREAMING_BUNDLE):
+        if os.path.exists(original) and not os.path.exists(original + ".bak"):
+            shutil.copy2(original, original + ".bak")
+
 
     # 1. CacheFiles(__data)에 저장 (게임 실행 시 최우선 읽는 파일)
     if os.path.exists(CACHE_DIR):
         with open(CACHE_DATA, "wb") as f:
             f.write(saved_bytes)
+        info_path = os.path.join(CACHE_DIR, "__info")
+        if os.path.exists(info_path) and not os.path.exists(info_path + ".bak"):
+            shutil.copy2(info_path, info_path + ".bak")
+        crc = f"{zlib.crc32(saved_bytes) & 0xffffffff:08x}".encode("ascii")
+        with open(info_path, "wb") as stream:
+            stream.write(struct.pack("<H", 8) + crc + struct.pack("<q", len(saved_bytes)))
         print(f"[+] 캐시 번들(__data) 패치 완료: {CACHE_DATA}")
 
     # 2. StreamingAssets(bundle)에 저장
@@ -185,7 +196,9 @@ def pack_translations_to_bundle(items, bundle_path=None):
     os.makedirs(sa_target, exist_ok=True)
     os.makedirs(cache_target, exist_ok=True)
     shutil.copy2(STREAMING_BUNDLE, os.path.join(sa_target, "d36af905d36461838e80ed5db5090c65.bundle"))
-    shutil.copy2(CACHE_DATA, os.path.join(cache_target, "__data"))
+    if os.path.exists(CACHE_DATA):
+        shutil.copy2(CACHE_DATA, os.path.join(cache_target, "__data"))
+        shutil.copy2(os.path.join(CACHE_DIR, "__info"), os.path.join(cache_target, "__info"))
 
     dist_zip = os.path.join(BASE_DIR, "OverField_Korean_Patch_v1.0.zip")
     with zipfile.ZipFile(dist_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
