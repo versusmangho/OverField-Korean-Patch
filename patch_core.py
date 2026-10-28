@@ -10,11 +10,9 @@ import shutil
 import zipfile
 import zlib
 import UnityPy
+from game_paths import configured_game_dir, detect_yooasset_cache
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-STREAMING_BUNDLE = os.path.join(BASE_DIR, "launcher_Data", "StreamingAssets", "yoo", "DefaultPackage", "d36af905d36461838e80ed5db5090c65.bundle")
-CACHE_DIR = os.path.join(BASE_DIR, "launcher_Data", "yoo", "DefaultPackage", "CacheFiles", "68", "68a9e72732e99edf100d6e4a6f692583")
-CACHE_DATA = os.path.join(CACHE_DIR, "__data")
 WORK_JSON = os.path.join(BASE_DIR, "translations.json")
 
 def parse_varint(buf, offset):
@@ -107,6 +105,10 @@ def pack_translations_to_bundle(items, bundle_path=None):
     """
     CacheFiles(__data)와 StreamingAssets(bundle) 양쪽 모두에 번역 내용을 패킹합니다.
     """
+    game_paths = detect_yooasset_cache(configured_game_dir())
+    STREAMING_BUNDLE = game_paths['streaming_bundle']
+    CACHE_DIR = game_paths['cache_dir']
+    CACHE_DATA = game_paths['data_file']
     mod_map = {}
     for it in items:
         if it.get('modified'):
@@ -116,7 +118,7 @@ def pack_translations_to_bundle(items, bundle_path=None):
     print(f"[*] 총 수정 항목 수: {len(mod_map):,}개")
 
     # 우선 캐시 번들 원본 로드
-    cache_src = CACHE_DATA + ".bak" if os.path.exists(CACHE_DATA + ".bak") else CACHE_DATA
+    cache_src = CACHE_DATA + ".clean_orig" if os.path.exists(CACHE_DATA + ".clean_orig") else CACHE_DATA
     target_bundle_file = cache_src if os.path.exists(cache_src) else STREAMING_BUNDLE
 
     env = UnityPy.load(target_bundle_file)

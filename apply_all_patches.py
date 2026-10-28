@@ -14,10 +14,12 @@ import zipfile
 import UnityPy
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-STREAMING_BUNDLE = os.path.join(BASE_DIR, "launcher_Data", "StreamingAssets", "yoo", "DefaultPackage", "d36af905d36461838e80ed5db5090c65.bundle")
-CACHE_DIR = os.path.join(BASE_DIR, "launcher_Data", "yoo", "DefaultPackage", "CacheFiles", "68", "68a9e72732e99edf100d6e4a6f692583")
-CACHE_DATA = os.path.join(CACHE_DIR, "__data")
-CACHE_INFO = os.path.join(CACHE_DIR, "__info")
+from game_paths import configured_game_dir, detect_yooasset_cache
+_GAME_PATHS = detect_yooasset_cache(configured_game_dir())
+STREAMING_BUNDLE = _GAME_PATHS['streaming_bundle']
+CACHE_DIR = _GAME_PATHS['cache_dir']
+CACHE_DATA = _GAME_PATHS['data_file']
+CACHE_INFO = _GAME_PATHS['info_file']
 WORK_JSON = os.path.join(BASE_DIR, "translations.json")
 
 def parse_varint(buf, offset):

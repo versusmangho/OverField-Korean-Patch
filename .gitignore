@@ -16,3 +16,13 @@ launcher_Data/
 translation_review/*.before-review.*
 translation_review/reviewed_payload.dat
 translation_review/reviewed__info
+
+# Local review backups and relocation records
+translation_review/*_backup*/
+translation_review/terminology_*/
+translation_review/ten_by_five/before_*
+translation_review/random_review_sources.local.json
+separation_manifest.json
+separate_patch.ps1
+OverField_Translation_Tables.xlsx
+csv_spreadsheets/

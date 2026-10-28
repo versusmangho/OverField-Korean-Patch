@@ -1,11 +1,12 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import os
 
 a = Analysis(
     ['OverFieldLauncher.py'],
     pathex=[],
     binaries=[],
-    datas=[('patch_payload.dat', '.')],
+    datas=[],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -14,6 +15,20 @@ a = Analysis(
     noarchive=False,
     optimize=0,
 )
+
+# Qt 6.11 uses the Windows ICU API (unversioned ucnv_* exports).
+# A build-machine PATH entry such as Poppler can supply a different icuuc.dll
+# with version-suffixed exports. Do not bundle it or its private data DLLs:
+# the Windows loader must resolve ICU from the target's System32 directory.
+if os.name == 'nt':
+    a.binaries = [
+        entry for entry in a.binaries
+        if not (
+            os.path.basename(entry[0]).lower().startswith('icu')
+            and entry[0].lower().endswith('.dll')
+        )
+    ]
+
 pyz = PYZ(a.pure)
 
 exe = EXE(

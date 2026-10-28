@@ -1,3 +1,4 @@
 PyQt6==6.11.0
+PyQt6-Qt6==6.11.1
 UnityPy==1.25.0
 requests==2.34.2
