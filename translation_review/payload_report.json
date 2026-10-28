@@ -1,8 +1,8 @@
 {
-  "changed_text_fields": 3413,
-  "applied_once": 3413,
-  "bundle_size": 10292378,
-  "crc32": "83543408",
+  "changed_text_fields": 4700,
+  "applied_once": 4700,
+  "bundle_size": 10301964,
+  "crc32": "d83b539d",
   "base_payload": "patch_payload.before-review.dat",
   "modified_asset": "String_Korea",
   "all_other_assets": "preserved",

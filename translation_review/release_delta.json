@@ -1,0 +1,12 @@
+{
+  "published_baseline": "v1.1.0",
+  "changed_ko_fields_since_v1_1_0": 638,
+  "by_table": {
+    "1": 3,
+    "20": 3,
+    "46": 632
+  },
+  "source_and_identity_preserved": true,
+  "only_changed_asset": "String_Korea",
+  "only_changed_asset_count": 1
+}

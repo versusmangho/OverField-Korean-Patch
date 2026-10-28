@@ -1,0 +1,10 @@
+{
+  "patch_payload.dat": {
+    "sha256": "02f343f4ebce19e05381ca86fd3a5413e3458d2fe76781337821e5181b98b0e8",
+    "size": 8630656
+  },
+  "OverFieldLauncher.exe": {
+    "sha256": "7e93e5370bf22a529b7d981fc48820c0af2688b7c887a27750cde552710abe85",
+    "size": 60531574
+  }
+}

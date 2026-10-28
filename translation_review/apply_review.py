@@ -184,7 +184,7 @@ def main():
             ('クールダウン', ['쿨타임'], '재사용 대기시간'),
             ('ロータフェス', ['로터 페스티벌', '로터페스', '로터 페스', '로타페스'], '로타 페스티벌'),
             ('探索部', ['탐험부', '탐사부'], '탐색부'),
-            ('イン元素', ['인 원소'], '인륨'),
+            ('イン元素', ['인 원소'], '인리움'),
         ]:
             if jp in ja:
                 for alias in aliases:
@@ -198,7 +198,7 @@ def main():
                 reasons.append('원문 용어 대조')
             ko = normalized
         if 'インリウム' in ja:
-            ko = ko.replace('에테리움 원소', '인륨').replace('인리움', '인륨')
+            ko = ko.replace('에테리움 원소', '인리움').replace('인리움', '인리움')
         if x['table_id'] == 17:
             for old, new in [('프론티어 아카이브', '프론티어 자료'), ('프론티어 기록', '프론티어 자료'),
                              ('영상 슬롯', '포토 슬롯'), ('프래그먼트 슬롯', '포토 슬롯'),
@@ -240,6 +240,9 @@ def main():
         if x['table_id'] in {1, 7, 17} and ja in NAMES:
             x['ko'] = NAMES[ja][0]
             reasons.append('독립 인명 필드 통일')
+        if '인륨' in x['ko']:
+            x['ko'] = x['ko'].replace('인륨', '인리움')
+            reasons.append('사용자 지정 용어: 인리움')
         # field_idx 2 is the speaker display name only in Table 46.
         if x['table_id'] == 46:
             japanese_speaker = x.get('speaker_ja', '')

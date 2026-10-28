@@ -1,0 +1,51 @@
+{
+  "paths": {
+    "cache_hash": "83cc446e06ef9932aad15012b1e498f2",
+    "cache_dir": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\OverField\\launcher_Data\\yoo\\DefaultPackage\\CacheFiles\\83\\83cc446e06ef9932aad15012b1e498f2",
+    "data_file": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\OverField\\launcher_Data\\yoo\\DefaultPackage\\CacheFiles\\83\\83cc446e06ef9932aad15012b1e498f2\\__data",
+    "info_file": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\OverField\\launcher_Data\\yoo\\DefaultPackage\\CacheFiles\\83\\83cc446e06ef9932aad15012b1e498f2\\__info",
+    "streaming_bundle": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\OverField\\launcher_Data\\StreamingAssets\\yoo\\DefaultPackage\\d36af905d36461838e80ed5db5090c65.bundle"
+  },
+  "files": [
+    {
+      "label": "launcher_external",
+      "path": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\OverField\\patch_payload.dat",
+      "bundle_sha256": "9d50c8ac442a4064167a13f4586ae139d924ad0b10ba28f57e8cce6dcfa0fa27",
+      "bundle_size": 10298708,
+      "mtime": 1793149215.847198,
+      "crc32": "1267a570",
+      "screenshot_dialogue": "저는 리더의 가이드니까 당연히 리더의 유닛에 들어갈 거예요.",
+      "recruit_form_dialogue": "이건 인사부의 대원 모집 신청서예요. 지금 다른 일을 맡고 있지 않은 프론티어를 모집할 수 있어요."
+    },
+    {
+      "label": "review_generated",
+      "path": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\OverField\\translation_review\\reviewed_payload.dat",
+      "bundle_sha256": "9d50c8ac442a4064167a13f4586ae139d924ad0b10ba28f57e8cce6dcfa0fa27",
+      "bundle_size": 10298708,
+      "mtime": 1793148697.8593316,
+      "crc32": "1267a570",
+      "screenshot_dialogue": "저는 리더의 가이드니까 당연히 리더의 유닛에 들어갈 거예요.",
+      "recruit_form_dialogue": "이건 인사부의 대원 모집 신청서예요. 지금 다른 일을 맡고 있지 않은 프론티어를 모집할 수 있어요."
+    },
+    {
+      "label": "installed_cache",
+      "path": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\OverField\\launcher_Data\\yoo\\DefaultPackage\\CacheFiles\\83\\83cc446e06ef9932aad15012b1e498f2\\__data",
+      "bundle_sha256": "2f90dbb8af4a2371bee5d6098bce953c534eedc443240b2a1b9575f6048c0018",
+      "bundle_size": 10292378,
+      "mtime": 1793149465.6275597,
+      "crc32": "83543408",
+      "screenshot_dialogue": "저는 리더 가이드이므로 반드시 귀하의 유닛에 가입합니다.",
+      "recruit_form_dialogue": "여기가 인사부의 대원 모집 신청 폼입니다. 현재 손이 비어 있는 프론티어를 모집할 수 있습니다."
+    },
+    {
+      "label": "installed_streaming",
+      "path": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\OverField\\launcher_Data\\StreamingAssets\\yoo\\DefaultPackage\\d36af905d36461838e80ed5db5090c65.bundle",
+      "bundle_sha256": "2f90dbb8af4a2371bee5d6098bce953c534eedc443240b2a1b9575f6048c0018",
+      "bundle_size": 10292378,
+      "mtime": 1793149465.6420758,
+      "crc32": "83543408",
+      "screenshot_dialogue": "저는 리더 가이드이므로 반드시 귀하의 유닛에 가입합니다.",
+      "recruit_form_dialogue": "여기가 인사부의 대원 모집 신청 폼입니다. 현재 손이 비어 있는 프론티어를 모집할 수 있습니다."
+    }
+  ]
+}

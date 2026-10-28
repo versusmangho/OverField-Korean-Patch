@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "changed_dialogues": 557,
+  "tables_changed": [
+    46
+  ],
+  "original_ko_source_keys_other_rows_preserved": true,
+  "placeholders_tags_preserved": true,
+  "bundled_source_verified": true,
+  "game_executed": false,
+  "github_pushed": false,
+  "rounds": 65,
+  "random_samples": 325,
+  "last_round_sample_errors": 0,
+  "deferred_rows": 12,
+  "json_sha256": "3eadf7cb7557c46fc800235c575781f9216ca6b44ff9800e56d09104c35f78fe",
+  "reviewed_payload_matches_all_557_changes": true,
+  "reviewed_payload_sha256": "5f92f466f46e9d3108ed950384f7e43c471b34330b9ab30a2700502f77b59e96"
+}

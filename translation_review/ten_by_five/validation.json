@@ -1,0 +1,45 @@
+{
+  "rounds": 40,
+  "samples": 400,
+  "verdicts": {
+    "fail": 305,
+    "pass": 92,
+    "deferred": 3
+  },
+  "clean_streak": 0,
+  "required_clean_streak": 5,
+  "complete": false,
+  "changed_dialogue_fields": 721,
+  "direct_correction_uids": 721,
+  "preserved": [
+    "row order",
+    "UID",
+    "key",
+    "index",
+    "original_ko",
+    "ja",
+    "speaker metadata",
+    "all other tables"
+  ],
+  "unexpected_changes": [],
+  "deferred": [
+    {
+      "round": 9,
+      "uid": "46_1472324642_3",
+      "reason": "兄의 지칭과 한국어 호칭을 주변 원문에서 확정하기 어려움. 관계를 추측하지 않고 보류"
+    },
+    {
+      "round": 16,
+      "uid": "46_568409849_3",
+      "reason": "원문 화자는 사키인데 본문이 사키 씨를 부름. 화자·원문 모순을 추측해 고치지 않고 보류"
+    },
+    {
+      "round": 31,
+      "uid": "46_1775978101_3",
+      "reason": "素乃 이름 독음은 기존 보류 항목과 연결되어 확정 근거가 부족함. 임의 정규화하지 않음."
+    }
+  ],
+  "json_sha256": "1c40b34b1a50c3c50c6ae16aa11672fbe53922be160923285adbfafa16c21ce7",
+  "game_runtime_executed": false,
+  "github_published": false
+}

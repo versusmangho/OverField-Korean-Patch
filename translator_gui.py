@@ -40,8 +40,8 @@ GAME_GLOSSARY = {
     "詩": "시",
     "ファンティーヌ": "팡틴",
     "エテリウム": "에테리움",
-    "インリウム": "인륨",
-    "イン元素": "인륨",
+    "インリウム": "인리움",
+    "イン元素": "인리움",
     "シュタイン": "슈타인",
     "ステイン": "스테인",
     "異変": "변이",
@@ -133,7 +133,7 @@ class TranslationTableModel(QAbstractTableModel):
     def apply_filter(self, search_text, table_filter, hide_keys, only_modified):
         self.beginResetModel()
         search_lower = search_text.strip().lower()
-
+        
         results = []
         for it in self.all_items:
             if table_filter and table_filter != "전체":
@@ -207,7 +207,7 @@ class TranslationEditorWindow(QMainWindow):
 
         # 1. 상단 툴바
         top_bar = QHBoxLayout()
-
+        
         self.btn_save = QPushButton("💾 작업 저장 (Ctrl+S)")
         self.btn_save.clicked.connect(self.action_save)
         top_bar.addWidget(self.btn_save)
@@ -231,7 +231,7 @@ class TranslationEditorWindow(QMainWindow):
 
         # 2. 필터 및 검색 바
         filter_bar = QHBoxLayout()
-
+        
         filter_bar.addWidget(QLabel("테이블:"))
         self.combo_table = QComboBox()
         self.combo_table.setMinimumWidth(260)
@@ -258,7 +258,7 @@ class TranslationEditorWindow(QMainWindow):
 
         # 3. 메인 스플리터 (좌: 목록 테이블, 우: 상세 편집기)
         splitter = QSplitter(Qt.Orientation.Horizontal)
-
+        
         # 좌측: 목록 테이블
         self.model = TranslationTableModel(self.items)
         self.table_view = QTableView()
@@ -291,7 +291,7 @@ class TranslationEditorWindow(QMainWindow):
         ja_header = QHBoxLayout()
         ja_header.addWidget(QLabel("🇯🇵 일본어 원문 (Reference):"))
         ja_header.addStretch()
-
+        
         self.btn_copy_ja = QPushButton("일본어 복사")
         self.btn_copy_ja.clicked.connect(self.action_copy_ja)
         ja_header.addWidget(self.btn_copy_ja)
@@ -374,7 +374,7 @@ class TranslationEditorWindow(QMainWindow):
     def populate_tables(self):
         self.combo_table.clear()
         self.combo_table.addItem("전체")
-
+        
         table_counts = {}
         for it in self.items:
             table_counts[it['table_id']] = table_counts.get(it['table_id'], 0) + 1

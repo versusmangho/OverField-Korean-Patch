@@ -1,0 +1,16 @@
+{
+  "exe_sha256": "e5f9e2a879294884ca191efe30dab4fb04a9c4fe8bf9be1b431882bdaf26a8a4",
+  "exe_size": 38243495,
+  "payload_embedded": false,
+  "settings_embedded": false,
+  "foreign_icu_dll_bundled": false,
+  "download_module_bundled": true,
+  "unit_tests_passed": 19,
+  "github_download_verified": true,
+  "downloaded_release": "v1.1.0",
+  "gui_game_executed": false,
+  "pushed_or_released": false,
+  "post_move_tests_passed": 19,
+  "game_files_unchanged": true,
+  "single_distribution_file": true
+}

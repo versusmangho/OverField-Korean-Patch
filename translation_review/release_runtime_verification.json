@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "mode": "real packaged EXE with QT_QPA_PLATFORM=offscreen",
+  "exe_sha256": "e5f9e2a879294884ca191efe30dab4fb04a9c4fe8bf9be1b431882bdaf26a8a4",
+  "payload_sha256": "22ede2a1a12e9da2b422dcf2b4d6075298341508f02167179eb4c9ece50a52ce",
+  "bundle_sha256": "71285450c3bf3097a18c34b4b9ca5f34b40f853819e9fd296aa197eb8a5548f6",
+  "cache_and_streaming_match": true,
+  "crc_and_size_match": true,
+  "backups_preserved": true,
+  "stale_adjacent_payload_ignored": true,
+  "user_cache_tag": "v1.1.1",
+  "game_executed": false,
+  "installed_game_files_written": false
+}

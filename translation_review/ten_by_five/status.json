@@ -1,0 +1,249 @@
+{
+  "batch_size": 10,
+  "required_clean_streak": 5,
+  "clean_streak": 0,
+  "complete": false,
+  "rounds": [
+    {
+      "round": 1,
+      "seed": 8822147265765084273,
+      "clean": false,
+      "errors": 8
+    },
+    {
+      "round": 2,
+      "seed": 3978839911747508613,
+      "clean": false,
+      "errors": 8
+    },
+    {
+      "round": 3,
+      "seed": 16772279054713528077,
+      "clean": false,
+      "errors": 8
+    },
+    {
+      "round": 4,
+      "seed": 8603831425004169044,
+      "clean": false,
+      "errors": 8
+    },
+    {
+      "round": 5,
+      "seed": 14880831910563878473,
+      "clean": false,
+      "errors": 8
+    },
+    {
+      "round": 6,
+      "seed": 15464092394257010217,
+      "clean": false,
+      "errors": 6
+    },
+    {
+      "round": 7,
+      "seed": 586894616480453705,
+      "clean": false,
+      "errors": 7
+    },
+    {
+      "round": 8,
+      "seed": 902311763035855226,
+      "clean": false,
+      "errors": 5
+    },
+    {
+      "round": 9,
+      "seed": 9189842681880792908,
+      "clean": false,
+      "errors": 9
+    },
+    {
+      "round": 10,
+      "seed": 13605320517864703657,
+      "clean": false,
+      "errors": 8
+    },
+    {
+      "round": 11,
+      "seed": 8131604159594955091,
+      "clean": false,
+      "errors": 6
+    },
+    {
+      "round": 12,
+      "seed": 6206820900604892186,
+      "clean": false,
+      "errors": 5
+    },
+    {
+      "round": 13,
+      "seed": 2174316611860397538,
+      "clean": false,
+      "errors": 8
+    },
+    {
+      "round": 14,
+      "seed": 16623600863303219700,
+      "clean": false,
+      "errors": 8
+    },
+    {
+      "round": 15,
+      "seed": 10610600248699629902,
+      "clean": false,
+      "errors": 7
+    },
+    {
+      "round": 16,
+      "seed": 5044707598616719189,
+      "clean": false,
+      "errors": 9
+    },
+    {
+      "round": 17,
+      "seed": 12027149686014815840,
+      "clean": false,
+      "errors": 5
+    },
+    {
+      "round": 18,
+      "seed": 2578140851352411734,
+      "clean": false,
+      "errors": 6
+    },
+    {
+      "round": 19,
+      "seed": 17505921895067442761,
+      "clean": false,
+      "errors": 9
+    },
+    {
+      "round": 20,
+      "seed": 15489889067774732158,
+      "clean": false,
+      "errors": 10
+    },
+    {
+      "round": 21,
+      "seed": 697169601337254310,
+      "clean": false,
+      "errors": 8
+    },
+    {
+      "round": 22,
+      "seed": 15152862133535598637,
+      "clean": false,
+      "errors": 8
+    },
+    {
+      "round": 23,
+      "seed": 15414928947827828784,
+      "clean": false,
+      "errors": 9
+    },
+    {
+      "round": 24,
+      "seed": 13521159487300096394,
+      "clean": false,
+      "errors": 8
+    },
+    {
+      "round": 25,
+      "seed": 1198380478816239955,
+      "clean": false,
+      "errors": 7
+    },
+    {
+      "round": 26,
+      "seed": 12119473956669155109,
+      "clean": false,
+      "errors": 9
+    },
+    {
+      "round": 27,
+      "seed": 911240847920054989,
+      "clean": false,
+      "errors": 7
+    },
+    {
+      "round": 28,
+      "seed": 3596282002771994629,
+      "clean": false,
+      "errors": 6
+    },
+    {
+      "round": 29,
+      "seed": 7060260138601873830,
+      "clean": false,
+      "errors": 10
+    },
+    {
+      "round": 30,
+      "seed": 5447088714000013929,
+      "clean": false,
+      "errors": 8
+    },
+    {
+      "round": 31,
+      "seed": 15791959646986804398,
+      "clean": false,
+      "errors": 8
+    },
+    {
+      "round": 32,
+      "seed": 4881582995993582743,
+      "clean": false,
+      "errors": 9
+    },
+    {
+      "round": 33,
+      "seed": 18238362269260968324,
+      "clean": false,
+      "errors": 8
+    },
+    {
+      "round": 34,
+      "seed": 17267138551027605156,
+      "clean": false,
+      "errors": 10
+    },
+    {
+      "round": 35,
+      "seed": 15563419233889112407,
+      "clean": false,
+      "errors": 6
+    },
+    {
+      "round": 36,
+      "seed": 4814283061219199605,
+      "clean": false,
+      "errors": 6
+    },
+    {
+      "round": 37,
+      "seed": 8543526609375497258,
+      "clean": false,
+      "errors": 8
+    },
+    {
+      "round": 38,
+      "seed": 11683402568885879384,
+      "clean": false,
+      "errors": 9
+    },
+    {
+      "round": 39,
+      "seed": 1806234865743743770,
+      "clean": false,
+      "errors": 9
+    },
+    {
+      "round": 40,
+      "seed": 2327845102112321045,
+      "clean": false,
+      "errors": 7
+    }
+  ],
+  "scope": "Table 46 dialogue field 3, source length >= 15; not directly corrected or previously sampled"
+}
